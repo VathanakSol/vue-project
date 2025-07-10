@@ -1,29 +1,25 @@
-# Step 1: Build the app
-FROM node:18 AS builder
+# Step 1: Build with a safe Node.js version
+FROM node:18.16.0 AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy source code
 COPY . .
 
-# Install dependencies
-RUN npm install
+# Optional: ensure clean environment
+RUN rm -rf node_modules package-lock.json && npm install
 
-# Build the Vue app
+# Build Vite app
 RUN npm run build
 
-# Step 2: Serve with a static file server
+# Step 2: Serve with Nginx
 FROM nginx:stable-alpine
 
-# Copy built files from builder
+# Copy built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Optional: replace default nginx config
+# Optional: Add custom Nginx config for SPA routing
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
 EXPOSE 80
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
