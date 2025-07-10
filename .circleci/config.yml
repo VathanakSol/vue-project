@@ -78,6 +78,10 @@ jobs:
       - run:
           name: Deploy to Production
           command: ./scripts/deploy.sh
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .output
 
   notify:
     executor: node_executor
@@ -106,7 +110,44 @@ workflows:
           filters:
             branches:
               only: main
-          when: << pipeline.parameters.run-deploy >>
+          # 'when' is not valid here for workflows, so remove it and use 'run-deploy' as a conditional job in the workflow
+          # when: << pipeline.parameters.run-deploy >>
+          # Instead, use 'deploy' as a conditional job:
+          <<: *deploy-conditional
       - notify:
           requires:
             - build
+            - deploy
+
+# Add a conditional job for deploy using 'when' at the job level
+commands:
+  # No custom commands needed
+
+# Use a conditional job for deploy
+workflows:
+  version: 2
+  pipeline:
+    jobs:
+      - install
+      - lint:
+          requires:
+            - install
+      - test:
+          requires:
+            - lint
+      - build:
+          requires:
+            - test
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
+          # Use 'run-deploy' parameter to conditionally run deploy
+          <<: 
+            when: << pipeline.parameters.run-deploy >>
+      - notify:
+          requires:
+            - build
+            - deploy
