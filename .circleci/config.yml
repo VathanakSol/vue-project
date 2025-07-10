@@ -110,10 +110,6 @@ workflows:
           filters:
             branches:
               only: main
-          # 'when' is not valid here for workflows, so remove it and use 'run-deploy' as a conditional job in the workflow
-          # when: << pipeline.parameters.run-deploy >>
-          # Instead, use 'deploy' as a conditional job:
-          <<: *deploy-conditional
       - notify:
           requires:
             - build
