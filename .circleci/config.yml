@@ -1,0 +1,46 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5
+
+jobs:
+  build-vue:
+    executor: node/default
+    steps:
+      - checkout
+
+      - node/install-packages:
+          pkg-manager: npm # or change to yarn if you're using yarn
+
+      - run:
+          name: Build Vue app
+          command: npm run build
+
+      - run:
+          name: Create the ~/artifacts directory if it doesn't exist
+          command: mkdir -p ~/artifacts
+
+      - run:
+          name: Copy build artifacts
+          command: cp -R dist ~/artifacts 2>/dev/null || true
+
+      - store_artifacts:
+          path: ~/artifacts
+          destination: vue-build
+
+  deploy:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: deploy
+          command: '# e.g. ./deploy.sh'
+
+workflows:
+  build:
+    jobs:
+      - build-vue
+    # Uncomment and modify below if deployment step is needed
+    # - deploy:
+    #     requires:
+    #       - build-vue
