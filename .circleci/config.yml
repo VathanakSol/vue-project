@@ -2,45 +2,111 @@ version: 2.1
 
 orbs:
   node: circleci/node@5
+  slack: circleci/slack@4.10.1
+
+parameters:
+  run-deploy:
+    type: boolean
+    default: false
+
+executors:
+  node_executor:
+    docker:
+      - image: cimg/node:20.5
 
 jobs:
-  build-vue:
-    executor: node/default
+  install:
+    executor: node_executor
     steps:
       - checkout
-
       - node/install-packages:
-          pkg-manager: npm # or change to yarn if you're using yarn
+          pkg-manager: npm
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependency-cache-{{ checksum "package-lock.json" }}
 
+  lint:
+    executor: node_executor
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package-lock.json" }}
       - run:
-          name: Build Vue app
+          name: Lint Code
+          command: npm run lint
+
+  test:
+    executor: node_executor
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Run Unit Tests
+          command: npm test
+      - store_test_results:
+          path: test-results
+
+  build:
+    executor: node_executor
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package-lock.json" }}
+      - run:
+          name: Build Project
           command: npm run build
-
-      - run:
-          name: Create the ~/artifacts directory if it doesn't exist
-          command: mkdir -p ~/artifacts
-
-      - run:
-          name: Copy build artifacts
-          command: cp -R dist ~/artifacts 2>/dev/null || true
-
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+            - .output
       - store_artifacts:
-          path: ~/artifacts
-          destination: vue-build
+          path: dist
+          destination: build-artifacts
 
   deploy:
-    docker:
-      - image: cimg/base:stable
+    executor: node_executor
     steps:
+      - checkout
+      - attach_workspace:
+          at: .
       - run:
-          name: deploy
-          command: '# e.g. ./deploy.sh'
+          name: Deploy to Production
+          command: ./scripts/deploy.sh
+
+  notify:
+    executor: node_executor
+    steps:
+      - slack/notify:
+          event: always
+          template: basic_success_1
 
 workflows:
-  build:
+  version: 2
+  pipeline:
     jobs:
-      - build-vue
-    # Uncomment and modify below if deployment step is needed
-    # - deploy:
-    #     requires:
-    #       - build-vue
+      - install
+      - lint:
+          requires:
+            - install
+      - test:
+          requires:
+            - lint
+      - build:
+          requires:
+            - test
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
+          when: << pipeline.parameters.run-deploy >>
+      - notify:
+          requires:
+            - build
