@@ -1,4 +1,5 @@
 <template>
+  <!-- Navigation Bar -->
   <header>
     <div>
       <nav>
@@ -16,9 +17,9 @@
 body {
   width: 100%;
   height: 100%;
-  background-color: orange;
+  background-color: black;
   display: flex;
-  color: black;
+  color: white;
 }
 nav {
   height: 50px;
