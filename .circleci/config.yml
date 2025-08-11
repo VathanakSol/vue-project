@@ -10,7 +10,7 @@ jobs:
       - checkout
 
       - node/install-packages:
-          pkg-manager: npm  # or change to yarn if you're using yarn
+          pkg-manager: npm # or change to yarn if you're using yarn
 
       - run:
           name: Build Vue app
@@ -64,5 +64,3 @@ workflows:
   testing:
     jobs:
       - runner-test
-
-  
