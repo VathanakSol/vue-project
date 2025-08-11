@@ -48,11 +48,12 @@ jobs:
           path: trivy-results.txt
           destination: trivy-scan-results
 
-  runner-test:
-    machine: true
+  build:
+    docker:
+      - image: cimg/base:current
     resource_class: my-runner/testing
     steps:
-      - run: echo "Hi I'm on Runners!"
+      - run: echo "Hi I'm on a Container Runner!"
 
 workflows:
   build:
@@ -61,6 +62,4 @@ workflows:
       - trivy-scan:
           requires:
             - build-vue
-  testing:
-    jobs:
-      - runner-test
+      - build
