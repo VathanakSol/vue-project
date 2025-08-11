@@ -48,6 +48,12 @@ jobs:
           path: trivy-results.txt
           destination: trivy-scan-results
 
+  runner-test:
+    machine: true
+    resource_class: my-runner/testing
+    steps:
+      - run: echo "Hi I'm on Runners!"
+
 workflows:
   build:
     jobs:
@@ -55,8 +61,8 @@ workflows:
       - trivy-scan:
           requires:
             - build-vue
-    # Uncomment and modify below if deployment step is needed
-    # - deploy:
-    #     requires:
-    #       - build-vue
+  testing:
+    jobs:
+      - runner-test
 
+  
