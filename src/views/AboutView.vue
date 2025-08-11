@@ -1,7 +1,6 @@
 <script setup lang="ts">
-  import VueDirective from '@/components/VueDirective.vue';
+import VueDirective from '@/components/VueDirective.vue'
 </script>
-
 
 <template>
   <div>
