@@ -37,3 +37,36 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## Architecture Overview
+
+```text
+index.html
+  └─ loads /src/main.ts
+       └─ createApp(App.vue)
+            ├─ install Pinia (stores/)
+            ├─ install Router (src/router/index.ts)
+            └─ mount #app
+
+App.vue
+  └─ &lt;RouterView/&gt;
+       ├─ HomeView.vue
+       ├─ AboutView.vue ── uses components/VueDirective.vue
+       ├─ HistoryView.vue ── uses components/ReactivityCom.vue
+       └─ ContactView.vue
+
+components/
+  ├─ TheWelcome.vue + icons/
+  ├─ HelloWorld.vue
+  └─ TestingMustache.vue
+
+stores/
+  └─ counter.ts (Pinia store: count, doubleCount, increment)
+
+build & tooling
+  ├─ Vite (vite.config.ts) + alias @ -&gt; src
+  ├─ TypeScript (tsconfig.*)
+  ├─ ESLint/Prettier/Oxlint (eslint.config.ts, .prettierrc.json)
+  ├─ CI: CircleCI (.circleci/config.yml) builds and scans Dockerfile
+  └─ Docker: Node builder -&gt; Nginx serving dist/
+```
