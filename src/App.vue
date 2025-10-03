@@ -8,6 +8,8 @@
         <RouterLink to="/history" className="router-link">History</RouterLink>
         <RouterLink to="/about" className="router-link">About</RouterLink>
         <RouterLink to="/contact" className="router-link">Contact</RouterLink>
+        <RouterLink to="/services" className="router-link">Services</RouterLink>
+        <RouterLink to="/portfolio" className="router-link">Portfolio</RouterLink>
       </nav>
     </div>
   </header>
